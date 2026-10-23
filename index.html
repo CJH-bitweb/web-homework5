@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Web前端技术推荐墙</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: "Microsoft YaHei", sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #1a202c;
+            margin-bottom: 30px;
+            font-size: 28px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        /* 搜索框（实验要求新增） */
+        .search-box {
+            max-width: 1200px;
+            margin: 0 auto 25px;
+            text-align: center;
+        }
+        #searchInput {
+            width: 320px;
+            max-width: 90%;
+            padding: 10px 16px;
+            font-size: 14px;
+            border: 1px solid #dcdfe6;
+            border-radius: 20px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+        #searchInput:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.2);
+        }
+        .count {
+            max-width: 1200px;
+            margin: 0 auto 15px;
+            font-size: 13px;
+            color: #888;
+            text-align: center;
+        }
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .tech-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 25px 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .tech-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+        }
+        .tech-card .icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+        .tech-card h3 {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .tech-card .desc {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 12px;
+        }
+        .tech-card .level {
+            display: inline-block;
+            padding: 3px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            color: #fff;
+            background: #667eea;
+            margin-bottom: 10px;
+        }
+        .tech-card .level.lv-1 { background: #38b48b; }
+        .tech-card .level.lv-2 { background: #f0a020; }
+        .tech-card .level.lv-3 { background: #e0524f; }
+        .tech-card .users {
+            font-size: 12px;
+            color: #aaa;
+        }
+        .empty {
+            max-width: 1200px;
+            margin: 0 auto;
+            text-align: center;
+            color: #aaa;
+            font-size: 14px;
+            padding: 40px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 Web前端技术推荐墙</h1>
+ 
+    <!-- 实验要求：顶部搜索框，输入关键词实时过滤卡片 -->
+    <div class="search-box">
+        <input id="searchInput" placeholder="搜索技术">
+    </div>
+    <div class="count" id="count"></div>
+ 
+    <div class="tech-grid" id="techGrid"></div>
+ 
+    <script>
+        // TODO1：数据数组（第1个为示例，其余9个已补全）
+        // 字段说明：
+        // icon - 技术图标（emoji）
+        // name - 技术名称
+        // desc - 一句话描述
+        // level - 难度（入门/进阶/高级）
+        // users - 学习人数
+        const technologies = [
+            { icon: "🌐", name: "HTML5",      desc: "网页的骨架",     level: "入门", users: 100000 },
+            { icon: "🎨", name: "CSS3",       desc: "网页的外衣",     level: "入门", users: 95000  },
+            { icon: "⚡", name: "JavaScript", desc: "网页的灵魂",     level: "入门", users: 98000  },
+            { icon: "💚", name: "Vue.js",     desc: "渐进式框架",     level: "进阶", users: 78000  },
+            { icon: "⚛️", name: "React",      desc: "组件化UI库",     level: "进阶", users: 82000  },
+            { icon: "🔷", name: "Node.js",    desc: "JS后端运行时",   level: "进阶", users: 65000  },
+            { icon: "📦", name: "TypeScript", desc: "带类型的JS",     level: "高级", users: 55000  },
+            { icon: "⚡", name: "Webpack",    desc: "模块打包工具",   level: "高级", users: 48000  },
+            { icon: "⚡", name: "Vite",       desc: "极速构建工具",   level: "高级", users: 42000  },
+            { icon: "▲", name: "Next.js",    desc: "React全栈框架",  level: "高级", users: 38000  }
+        ];
+ 
+        // ====== DOM 查找 ======
+        const grid = document.getElementById('techGrid');
+        const searchInput = document.getElementById('searchInput');
+        const count = document.getElementById('count');
+ 
+        // 难度对应的样式类
+        const levelClass = { "入门": "lv-1", "进阶": "lv-2", "高级": "lv-3" };
+ 
+        // TODO 2 + TODO 3：用 map + 模板字符串生成卡片HTML字符串，再用 .join('') 拼接
+        function render(list) {
+            // map() 遍历数组，每个元素返回一段卡片HTML（模板字符串 + ${} 插值）
+            const cardsHTML = list.map(function (t) {
+                return `
+                    <div class="tech-card">
+                        <div class="icon">${t.icon}</div>
+                        <h3>${t.name}</h3>
+                        <p class="desc">${t.desc}</p>
+                        <span class="level ${levelClass[t.level]}">${t.level}</span>
+                        <p class="users">🔥 ${t.users.toLocaleString()} 人在学</p>
+                    </div>
+                `;
+            }).join('');   // 把数组拼成一个完整的字符串
+ 
+            // TODO 4：用 innerHTML 塞进页面
+            grid.innerHTML = cardsHTML;
+ 
+            // 提示当前显示数量；无结果时给出空状态
+            count.textContent = '共 ' + list.length + ' 项技术';
+            if (list.length === 0) {
+                grid.innerHTML = '<div class="empty">没有找到匹配的技术，换个关键词试试～</div>';
+            }
+        }
+ 
+        // ====== 实时搜索过滤：filter() + includes() + 重新渲染 ======
+        function filterTech(keyword) {
+            const kw = keyword.trim().toLowerCase();
+            return technologies.filter(function (t) {
+                // 名称、描述、难度 任一包含关键词即命中
+                return t.name.toLowerCase().includes(kw)
+                    || t.desc.toLowerCase().includes(kw)
+                    || t.level.indexOf(kw) !== -1;
+            });
+        }
+ 
+        searchInput.addEventListener('input', function (e) {
+            render(filterTech(e.target.value));   // 改数组 → 页面自动变
+        });
+ 
+        // ====== （选做）事件委托 + e.target.closest() ======
+        grid.addEventListener('click', function (e) {
+            const card = e.target.closest('.tech-card');
+            if (card) {
+                const name = card.querySelector('h3').textContent;
+                alert('你点击了：' + name);
+            }
+        });
+ 
+        // 首次渲染：把10个技术卡片渲染到页面
+        render(technologies);
+    </script>
+</body>
+</html>
